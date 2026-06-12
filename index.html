@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iruña Partner Challenge · Horarios, WODs y Equipos</title>
+<meta name="description" content="Horarios, WODs y equipos del Iruña Partner Challenge de CrossFit Iruña. Selecciona tu equipo y consulta tu ficha.">
+<meta name="theme-color" content="#7c3957">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Iruña PC">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Pacifico&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#7c3957;
+    --bg-deep:#622c45;
+    --card:#6b2f4b;
+    --card-line:rgba(255,255,255,.18);
+    --yellow:#f6c945;
+    --yellow-soft:#fadf8e;
+    --pink:#f2a8cb;
+    --ink:#fdf4ee;
+    --ink-dim:rgba(253,244,238,.72);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:
+      radial-gradient(1100px 500px at 85% -10%, rgba(246,201,69,.10), transparent 60%),
+      radial-gradient(900px 600px at -10% 110%, rgba(242,168,203,.12), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"Archivo",system-ui,sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  /* ---------- Header ---------- */
+  header{text-align:center;padding:42px 16px 10px}
+  header h1{
+    font-family:"Permanent Marker",cursive;
+    font-size:clamp(2.6rem,8vw,4.6rem);
+    color:var(--yellow);
+    letter-spacing:2px;
+    text-shadow:3px 3px 0 rgba(0,0,0,.22);
+    line-height:1;
+  }
+  header .sub{
+    font-family:"Pacifico",cursive;
+    font-size:clamp(1.3rem,4vw,2rem);
+    color:var(--pink);
+    margin-top:2px;
+    text-shadow:2px 2px 0 rgba(0,0,0,.18);
+  }
+  header .meta{
+    margin-top:10px;font-size:.82rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-dim);
+  }
+  /* ---------- Controls ---------- */
+  .controls{
+    position:sticky;top:0;z-index:30;
+    background:linear-gradient(var(--bg) 75%, transparent);
+    padding:14px 16px 18px;
+  }
+  .controls-inner{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:12px;align-items:center}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .tab{
+    font-family:"Archivo";font-weight:800;font-size:.95rem;
+    text-transform:uppercase;letter-spacing:.06em;
+    background:transparent;color:var(--ink-dim);
+    border:2px solid var(--card-line);
+    padding:9px 20px;border-radius:999px;cursor:pointer;
+    transition:all .18s ease;
+  }
+  .tab:hover{color:var(--ink);border-color:var(--ink-dim)}
+  .tab.active{background:var(--yellow);border-color:var(--yellow);color:#4a2138}
+  .team-picker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+  .team-picker label{
+    font-family:"Pacifico",cursive;color:var(--pink);font-size:1.05rem;
+  }
+  .team-picker select{
+    font-family:"Archivo";font-weight:600;font-size:.9rem;
+    background:var(--bg-deep);color:var(--ink);
+    border:1.5px solid var(--card-line);border-radius:10px;
+    padding:8px 12px;cursor:pointer;max-width:260px;
+  }
+  .team-picker select:focus-visible,.tab:focus-visible{outline:3px solid var(--yellow-soft);outline-offset:2px}
+  .team-picker .clear{
+    background:none;border:none;color:var(--ink-dim);font-size:.78rem;
+    cursor:pointer;text-decoration:underline;display:none;
+  }
+  .team-picker .clear.visible{display:inline}
+  /* ---------- Layout ---------- */
+  main{max-width:980px;margin:0 auto;padding:8px 16px}
+  section.view{display:none;animation:fadein .25s ease}
+  section.view.show{display:block}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  /* ---------- Ficha de equipo ---------- */
+  .ficha{
+    background:var(--bg-deep);
+    border:2px solid var(--yellow);
+    border-radius:var(--radius);
+    padding:24px;margin:14px 0 30px;
+    box-shadow:0 0 0 5px rgba(246,201,69,.10);
+  }
+  .ficha .ficha-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+  .ficha h2{
+    font-family:"Permanent Marker",cursive;color:var(--yellow);
+    font-size:clamp(1.5rem,5vw,2.1rem);letter-spacing:1px;line-height:1.1;
+  }
+  .ficha .badges{display:flex;gap:8px;flex-wrap:wrap}
+  .ficha .badge{
+    font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    background:var(--pink);color:#4a2138;padding:5px 12px;border-radius:999px;
+  }
+  .ficha .badge.heat{background:var(--yellow)}
+  .ficha-table{width:100%;border-collapse:collapse}
+  .ficha-table th,.ficha-table td{
+    text-align:left;padding:11px 12px;font-size:.93rem;
+    border-bottom:1px dashed var(--card-line);
+  }
+  .ficha-table th{
+    font-size:.7rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+  .ficha-table td.wodname{
+    font-family:"Permanent Marker",cursive;color:var(--yellow-soft);
+    letter-spacing:1px;font-size:1.02rem;
+  }
+  .ficha-table td.t{font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .ficha-table td.t.main{color:var(--yellow);font-size:1.08rem}
+  .ficha-table tr:last-child td{border-bottom:none}
+  .ficha-table .verwod{
+    background:none;border:1.5px solid var(--card-line);color:var(--ink-dim);
+    font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:999px;cursor:pointer;
+  }
+  .ficha-table .verwod:hover{color:var(--ink);border-color:var(--ink)}
+  .ficha .hint{margin-top:12px;font-size:.78rem;color:var(--ink-dim)}
+  /* ---------- Horarios (timeline) ---------- */
+  .wod-block{margin-bottom:34px}
+  .wod-block>h3{
+    font-family:"Permanent Marker",cursive;color:var(--yellow);
+    font-size:1.7rem;letter-spacing:1.5px;margin-bottom:4px;
+    display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  }
+  .wod-block>h3 small{
+    font-family:"Archivo";font-weight:600;font-size:.75rem;
+    color:var(--ink-dim);letter-spacing:.12em;text-transform:uppercase;
+  }
+  .wod-note{
+    font-size:.78rem;color:var(--ink-dim);margin-bottom:8px;
+    border-left:3px solid var(--pink);padding-left:10px;
+  }
+  .timeline{
+    border-left:3px solid var(--card-line);
+    margin-left:8px;padding-left:18px;
+    display:flex;flex-direction:column;gap:10px;padding-top:6px;
+  }
+  .slot{
+    position:relative;
+    background:var(--card);
+    border:1px solid var(--card-line);
+    border-radius:var(--radius);
+    padding:12px 16px;
+    display:grid;grid-template-columns:74px 1fr auto;gap:6px 14px;align-items:center;
+  }
+  .slot::before{
+    content:"";position:absolute;left:-25px;top:50%;transform:translateY(-50%);
+    width:11px;height:11px;border-radius:50%;
+    background:var(--pink);border:2px solid var(--bg);
+  }
+  .slot .time{font-weight:800;font-size:1.15rem;color:var(--yellow-soft);font-variant-numeric:tabular-nums}
+  .slot .what{font-weight:600}
+  .slot .what small{display:block;font-weight:400;font-size:.78rem;color:var(--ink-dim);margin-top:2px}
+  .slot .cat{
+    font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+    background:rgba(0,0,0,.22);color:var(--ink-dim);
+    padding:4px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .slot.warmup{background:transparent;border-style:dashed}
+  .slot.warmup .time{color:var(--ink-dim);font-size:1rem}
+  .slot.mine{border:2px solid var(--yellow);box-shadow:0 0 0 4px rgba(246,201,69,.12)}
+  .slot.mine::before{background:var(--yellow)}
+  .slot .me-tag{
+    grid-column:3;justify-self:end;
+    font-size:.68rem;font-weight:800;letter-spacing:.08em;
+    background:var(--yellow);color:#4a2138;
+    padding:3px 9px;border-radius:999px;white-space:nowrap;
+  }
+  /* ---------- WODs ---------- */
+  .wod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px;margin-top:8px}
+  .wod-card{
+    background:var(--card);border:1px solid var(--card-line);
+    border-radius:var(--radius);padding:22px 22px 18px;
+    display:flex;flex-direction:column;gap:12px;
+    scroll-margin-top:140px;
+  }
+  .wod-card h3{
+    font-family:"Permanent Marker",cursive;color:var(--yellow);
+    font-size:1.6rem;letter-spacing:1.5px;
+    display:flex;justify-content:space-between;align-items:baseline;
+  }
+  .wod-card h3 small{font-family:"Pacifico",cursive;color:var(--pink);font-size:1rem;letter-spacing:0}
+  .rxsc{display:flex;gap:6px}
+  .rxsc button{
+    flex:1;font-family:"Archivo";font-weight:800;font-size:.8rem;letter-spacing:.08em;
+    padding:7px 0;border-radius:8px;cursor:pointer;
+    background:rgba(0,0,0,.2);color:var(--ink-dim);border:1.5px solid transparent;
+    transition:all .15s ease;
+  }
+  .rxsc button.active{background:var(--yellow);color:#4a2138}
+  .rxsc button:focus-visible{outline:3px solid var(--yellow-soft);outline-offset:2px}
+  .wod-body{font-size:.92rem;line-height:1.65;white-space:pre-line;color:var(--ink)}
+  .wod-body b{color:var(--yellow-soft)}
+  .wod-load{
+    margin-top:auto;font-size:.8rem;font-weight:700;letter-spacing:.06em;
+    color:var(--pink);text-transform:uppercase;
+    border-top:1px dashed var(--card-line);padding-top:10px;
+  }
+  /* ---------- Equipos ---------- */
+  .equipos-intro{
+    text-align:center;font-size:.88rem;color:var(--ink-dim);margin:6px 0 18px;
+  }
+  .cat-block{margin-bottom:30px}
+  .cat-block h3{font-family:"Pacifico",cursive;color:var(--pink);font-size:1.4rem;margin-bottom:10px}
+  .heats{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+  .heat{
+    background:var(--card);border:1px solid var(--card-line);
+    border-radius:var(--radius);padding:16px 18px;
+  }
+  .heat h4{
+    font-size:.78rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--yellow-soft);margin-bottom:10px;
+    border-bottom:1px dashed var(--card-line);padding-bottom:8px;
+  }
+  .heat ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+  .heat li{padding:0}
+  .heat li button{
+    width:100%;text-align:left;font-family:"Archivo";font-size:.92rem;color:var(--ink);
+    padding:8px 10px;border-radius:8px;border:1.5px solid transparent;
+    background:rgba(0,0,0,.14);cursor:pointer;transition:all .14s ease;
+    display:flex;justify-content:space-between;align-items:center;gap:8px;
+  }
+  .heat li button::after{content:"›";color:var(--ink-dim);font-weight:800}
+  .heat li button:hover{border-color:var(--pink);color:var(--ink)}
+  .heat li button.selected{background:var(--yellow);color:#4a2138;font-weight:800}
+  .heat li button.selected::after{content:"✓";color:#4a2138}
+  .heat li button:focus-visible{outline:3px solid var(--yellow-soft);outline-offset:2px}
+  /* ---------- Footer ---------- */
+  footer{
+    text-align:center;margin-top:56px;padding:0 16px;
+    font-size:.8rem;color:var(--ink-dim);letter-spacing:.04em;
+  }
+  footer .dwa{
+    display:inline-flex;align-items:center;gap:8px;margin-top:6px;
+    background:#0d1b2e;border:1px solid rgba(59,155,232,.4);
+    color:#fff;text-decoration:none;
+    padding:8px 16px;border-radius:999px;font-weight:600;font-size:.8rem;
+    transition:border-color .15s ease;
+  }
+  .footer .dwa:hover{border-color:#3b9be8}
+  footer .dwa .dot{width:8px;height:8px;border-radius:50%;background:#3b9be8}
+  footer .dwa b{color:#3b9be8;font-weight:800}
+  @media (max-width:560px){
+    header{padding:30px 14px 6px}
+    .controls{padding:10px 12px 14px}
+    .team-picker{width:100%}
+    .team-picker select{flex:1;max-width:none;min-height:44px}
+    .tab{padding:10px 16px;font-size:.85rem}
+    .slot{grid-template-columns:60px 1fr;padding:11px 13px}
+    .slot .cat{display:none}
+    .slot .me-tag{grid-column:2;justify-self:start;margin-top:2px}
+    .ficha{padding:16px 14px}
+    .ficha-table th,.ficha-table td{padding:9px 6px;font-size:.84rem}
+    .ficha-table td.wodname{font-size:.92rem}
+    .ficha-table td.t.main{font-size:1rem}
+    .ficha-table .verwod{padding:5px 8px;font-size:.66rem}
+    .wod-card{padding:18px 16px 14px}
+    .heat li button{min-height:44px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>IRUÑA</h1>
+  <div class="sub">partner challenge</div>
+  <div class="meta">CrossFit Iruña · 4 WODs · Parejas · RX / SC</div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button class="tab active" data-view="horarios" role="tab" aria-selected="true">Horarios</button>
+      <button class="tab" data-view="wods" role="tab" aria-selected="false">WODs</button>
+      <button class="tab" data-view="equipos" role="tab" aria-selected="false">Equipos</button>
+    </nav>
+    <div class="team-picker">
+      <label for="teamSelect">Tu equipo:</label>
+      <select id="teamSelect" aria-label="Selecciona tu equipo">
+        <option value="">— Selecciona tu equipo —</option>
+      </select>
+      <button class="clear" id="clearTeam">quitar selección</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <section class="view show" id="view-horarios" role="tabpanel"></section>
+  <section class="view" id="view-wods" role="tabpanel"></section>
+  <section class="view" id="view-equipos" role="tabpanel"></section>
+</main>
+
+<footer>
+  <div>Iruña Partner Challenge · CrossFit Iruña</div>
+  <a class="dwa" href="https://digitalworkapps.netlify.app" target="_blank" rel="noopener">
+    <span class="dot"></span> Herramienta diseñada por <b>DigitalWorkApps</b>
+  </a>
+</footer>
+
+<script>
+/* ================= DATOS (extraídos del PDF oficial) ================= */
+const WODS = [
+  {
+    id:"minnie", name:"MINNIE", num:"WOD 1",
+    rx:`<b>Cap 12'</b>
+200m run (synchro)
+60 KB swing O.H. (30 each)
+10 T2B (synchro)
+—
+200m run (synchro)
+50 KB swing O.H. (25 each)
+15 C2B (synchro)
+—
+200m run (synchro)
+40 KB swing O.H. (20 each)
+10 BMU (synchro)`,
+    sc:`<b>Cap 12'</b>
+200m run (synchro)
+50 KB swing O.H. (relay)
+10 sit-ups (synchro)
+—
+200m run (synchro)
+40 KB swing O.H. (relay)
+15 KTE (synchro)
+—
+200m run (synchro)
+30 KB swing O.H. (relay)
+10 pull ups (synchro)`,
+    rxLoad:"RX 24 / 16 kg", scLoad:"SC 16 / 8 kg"
+  },
+  {
+    id:"pluto", name:"PLUTO", num:"WOD 2",
+    rx:`<b>Intervals</b>
+90" athlete A → 10 B.O.DB + 10 DB snatch + máx cals Assault bike
+90" athlete B → 12 B.O.DB + 12 DB snatch + máx cals Assault bike
+90" athlete A → 14 B.O.DB + 14 DB snatch + máx cals Assault bike
+90" athlete B → 16 B.O.DB + 16 DB snatch + máx cals Assault bike
+<b>3' A + B</b> (reparto libre)
+32 B.O.DB + 32 DB snatch + máx cals Assault bike`,
+    sc:`<b>Intervals</b>
+90" athlete A → 10 B.O.DB + 10 DB snatch + máx cals Assault bike
+90" athlete B → 11 B.O.DB + 11 DB snatch + máx cals Assault bike
+90" athlete A → 12 B.O.DB + 12 DB snatch + máx cals Assault bike
+90" athlete B → 13 B.O.DB + 13 DB snatch + máx cals Assault bike
+<b>3' A + B</b> (reparto libre)
+26 B.O.DB + 26 DB snatch + máx cals Assault bike`,
+    rxLoad:"RX 22,5 / 15 kg", scLoad:"SC 15 / 7,5 kg"
+  },
+  {
+    id:"goofy", name:"GOOFY", num:"WOD 3",
+    rx:`<b>Ladder · EMOM 8'</b>
+1 punto → DL
+2 puntos → CLEAN
+3 puntos → CLEAN AND JERK
+4 puntos → SNATCH
+—
+Cargas por minuto:
+♂ 50 / 60 / 70 / 80 / 90 / 95 / 100 / 105 kg
+♀ 35 / 40 / 45 / 50 / 57 / 63 / 68 / 72 kg`,
+    sc:`<b>Ladder · EMOM 8'</b>
+1 punto → DL
+2 puntos → CLEAN
+3 puntos → CLEAN AND JERK
+4 puntos → SNATCH
+—
+Cargas por minuto:
+♂ 50 / 60 / 70 / 80 / 90 / 95 / 100 / 105 kg
+♀ 35 / 40 / 45 / 50 / 57 / 63 / 68 / 72 kg`,
+    rxLoad:"Misma ladder para todos", scLoad:"Misma ladder para todos"
+  },
+  {
+    id:"mickey", name:"MICKEY", num:"WOD 4",
+    rx:`<b>Time cap 9'</b>
+4 rounds:
+20 / 17 / 14 cals row (relay)
+10 box jump over (synchro)
+5 G.T.O.H (synchro)`,
+    sc:`<b>Time cap 9'</b>
+4 rounds:
+20 / 17 / 14 cals row (relay)
+10 box step over (synchro)
+5 G.T.O.H (synchro)`,
+    rxLoad:"RX 60 / 40 kg", scLoad:"SC 40 / 25 kg"
+  }
+];
+
+// Horarios: wu = warm up [heat1, heat2], w = WOD [heat1, heat2]
+const SCHEDULE = [
+  { wod:"MINNIE", note:null, cats:{
+    femenina:{wu:["7:30","7:47"], w:["8:00","8:17"]},
+    mixta:{wu:["8:04","8:21"], w:["8:34","8:51"]},
+    masculina:{wu:["8:38","8:55"], w:["9:08","9:25"]}
+  }},
+  { wod:"PLUTO", note:null, cats:{
+    femenina:{wu:["9:22","9:36"], w:["9:52","10:06"]},
+    mixta:{wu:["9:50","10:04"], w:["10:20","10:34"]},
+    masculina:{wu:["10:18","10:32"], w:["10:48","11:02"]}
+  }},
+  { wod:"GOOFY", note:"Femenina y masculina comparten franja horaria: las barras de chicos y chicas son distintas, así se aprovechan las calles y se ahorra tiempo.", cats:{
+    femenina:{wu:["11:00","11:15"], w:["11:30","11:45"]},
+    mixta:{wu:["11:30","11:45"], w:["12:00","12:15"]},
+    masculina:{wu:["11:00","11:15"], w:["11:30","11:45"]}
+  }},
+  { wod:"MICKEY", note:null, cats:{
+    femenina:{wu:["12:15","12:29"], w:["12:45","12:59"]},
+    mixta:{wu:["12:43","12:57"], w:["13:13","13:27"]},
+    masculina:{wu:["13:11","13:25"], w:["13:41","13:55"]}
+  }}
+];
+
+const TEAMS = {
+  femenina:{
+    h1:["Taquicardias con alegría","Asanas y barras","Las gudaris","Las muertas pesadas","Las merys","AAgujetas","Lentas pero contentas"],
+    h2:["Handstand girls","KM 0 burpees","Calvin rubis","Bisister","Unbroken spirit","Sincroniz-hadas","Meraki"]
+  },
+  mixta:{
+    h1:["NiEtaZu","Nocilla duo","Beer to bar","Los super wariors","Black is black","Jonmery improvised","Camarones"],
+    h2:["Los suricatos","Team rocket","I²","La piva y el pive","New team","Poliki - poliki","Snatch and smash"]
+  },
+  masculina:{
+    h1:["Los pesos muertos","Tallarin","Kaltzio","Sin reps no hay paraiso","Los eléctricos","Los burpee bandits","Robavier RX"],
+    h2:["Dragon Ball","Gymbros","Team cardio","Black and yellow","BTS Team","Hombreños","Full Gas team"]
+  }
+};
+const CAT_LABEL = {femenina:"Femenina", mixta:"Mixta", masculina:"Masculina"};
+
+// Índice de equipos: nombre → {cat, heat}
+const TEAM_INDEX = {};
+Object.entries(TEAMS).forEach(([cat,heats])=>{
+  heats.h1.forEach(t=>TEAM_INDEX[t]={cat,heat:0});
+  heats.h2.forEach(t=>TEAM_INDEX[t]={cat,heat:1});
+});
+
+/* ================= ESTADO ================= */
+let myTeam = null; // nombre del equipo seleccionado (en memoria, sin persistencia)
+
+/* ================= RENDER: HORARIOS ================= */
+function renderHorarios(){
+  const root = document.getElementById("view-horarios");
+  const sel = myTeam ? TEAM_INDEX[myTeam] : null;
+  let html = "";
+  SCHEDULE.forEach((blk,i)=>{
+    const wodMeta = WODS[i];
+    let slots = "";
+    Object.entries(blk.cats).forEach(([cat,t])=>{
+      [0,1].forEach(h=>{
+        const mine = sel && sel.cat===cat && sel.heat===h;
+        slots += `
+          <div class="slot warmup ${mine?"mine":""}">
+            <span class="time">${t.wu[h]}</span>
+            <span class="what">Warm up · Heat ${h+1}<small>Calentamiento</small></span>
+            <span class="cat">${CAT_LABEL[cat]}</span>
+          </div>
+          <div class="slot ${mine?"mine":""}">
+            <span class="time">${t.w[h]}</span>
+            <span class="what">WOD ${blk.wod} · Heat ${h+1}<small>${wodMeta.num}</small></span>
+            <span class="cat">${CAT_LABEL[cat]}</span>
+            ${mine?`<span class="me-tag">${myTeam.toUpperCase()}</span>`:""}
+          </div>`;
+      });
+    });
+    html += `
+      <div class="wod-block">
+        <h3>${blk.wod} <small>${wodMeta.num}</small></h3>
+        ${blk.note?`<p class="wod-note">${blk.note}</p>`:""}
+        <div class="timeline">${slots}</div>
+      </div>`;
+  });
+  root.innerHTML = html;
+}
+
+/* ================= RENDER: WODS ================= */
+function renderWods(){
+  const root = document.getElementById("view-wods");
+  root.innerHTML = `<div class="wod-grid">` + WODS.map(w=>`
+    <article class="wod-card" data-wod="${w.id}" id="card-${w.id}">
+      <h3>${w.name} <small>${w.num}</small></h3>
+      <div class="rxsc" role="group" aria-label="Versión del WOD ${w.name}">
+        <button class="active" data-mode="rx">RX</button>
+        <button data-mode="sc">SC</button>
+      </div>
+      <div class="wod-body">${w.rx}</div>
+      <div class="wod-load">${w.rxLoad}</div>
+    </article>`).join("") + `</div>`;
+
+  root.querySelectorAll(".wod-card").forEach(card=>{
+    const wod = WODS.find(x=>x.id===card.dataset.wod);
+    card.querySelectorAll(".rxsc button").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        card.querySelectorAll(".rxsc button").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        const mode = btn.dataset.mode;
+        card.querySelector(".wod-body").innerHTML = wod[mode];
+        card.querySelector(".wod-load").textContent = mode==="rx"?wod.rxLoad:wod.scLoad;
+      });
+    });
+  });
+}
+
+/* ================= RENDER: EQUIPOS (ficha + listado) ================= */
+function buildFicha(){
+  if(!myTeam) return "";
+  const {cat,heat} = TEAM_INDEX[myTeam];
+  const rows = SCHEDULE.map((blk,i)=>{
+    const t = blk.cats[cat];
+    return `<tr>
+      <td class="wodname">${blk.wod}</td>
+      <td class="t">${t.wu[heat]}</td>
+      <td class="t main">${t.w[heat]}</td>
+      <td><button class="verwod" data-goto="${WODS[i].id}">Ver WOD</button></td>
+    </tr>`;
+  }).join("");
+  return `
+    <div class="ficha" id="fichaEquipo">
+      <div class="ficha-head">
+        <h2>${myTeam}</h2>
+        <div class="badges">
+          <span class="badge">Categoría ${CAT_LABEL[cat]}</span>
+          <span class="badge heat">Heat ${heat+1}</span>
+        </div>
+      </div>
+      <table class="ficha-table">
+        <thead>
+          <tr><th>WOD</th><th>Warm up</th><th>Hora WOD</th><th></th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="hint">Los horarios de tu equipo también aparecen resaltados en la pestaña Horarios.</p>
+    </div>`;
+}
+
+function renderEquipos(){
+  const root = document.getElementById("view-equipos");
+  let html = buildFicha();
+  html += `<p class="equipos-intro">Toca tu equipo para ver tu ficha con horarios por WOD.</p>`;
+  Object.entries(TEAMS).forEach(([cat,heats])=>{
+    const li = list => list.map(t=>
+      `<li><button data-team="${t.replace(/"/g,'&quot;')}" class="${t===myTeam?"selected":""}">${t}</button></li>`
+    ).join("");
+    html += `
+      <div class="cat-block">
+        <h3>Categoría ${CAT_LABEL[cat].toLowerCase()}</h3>
+        <div class="heats">
+          <div class="heat"><h4>Heat 1</h4><ul>${li(heats.h1)}</ul></div>
+          <div class="heat"><h4>Heat 2</h4><ul>${li(heats.h2)}</ul></div>
+        </div>
+      </div>`;
+  });
+  root.innerHTML = html;
+
+  root.querySelectorAll("[data-team]").forEach(btn=>{
+    btn.addEventListener("click",()=>selectTeam(btn.dataset.team,true));
+  });
+  root.querySelectorAll(".verwod").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      showView("wods");
+      requestAnimationFrame(()=>{
+        document.getElementById("card-"+btn.dataset.goto)?.scrollIntoView({behavior:"smooth",block:"start"});
+      });
+    });
+  });
+}
+
+/* ================= SELECCIÓN DE EQUIPO ================= */
+const select = document.getElementById("teamSelect");
+const clearBtn = document.getElementById("clearTeam");
+
+function fillSelect(){
+  Object.entries(TEAMS).forEach(([cat,heats])=>{
+    const group = document.createElement("optgroup");
+    group.label = "Categoría " + CAT_LABEL[cat];
+    [...heats.h1,...heats.h2].sort((a,b)=>a.localeCompare(b,"es")).forEach(t=>{
+      const opt = document.createElement("option");
+      opt.value = t; opt.textContent = t;
+      group.appendChild(opt);
+    });
+    select.appendChild(group);
+  });
+}
+
+function selectTeam(name, scrollToFicha){
+  myTeam = name || null;
+  select.value = myTeam || "";
+  clearBtn.classList.toggle("visible", !!myTeam);
+  renderHorarios();
+  renderEquipos();
+  if(myTeam && scrollToFicha){
+    showView("equipos");
+    requestAnimationFrame(()=>{
+      document.getElementById("fichaEquipo")?.scrollIntoView({behavior:"smooth",block:"start"});
+    });
+  }
+}
+
+select.addEventListener("change",()=>selectTeam(select.value, true));
+clearBtn.addEventListener("click",()=>selectTeam(null,false));
+
+/* ================= NAVEGACIÓN ================= */
+function showView(name){
+  document.querySelectorAll(".tab").forEach(t=>{
+    const on = t.dataset.view===name;
+    t.classList.toggle("active",on);
+    t.setAttribute("aria-selected",on?"true":"false");
+  });
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("show"));
+  document.getElementById("view-"+name).classList.add("show");
+}
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click",()=>showView(tab.dataset.view));
+});
+
+/* ================= INIT ================= */
+fillSelect();
+renderHorarios();
+renderWods();
+renderEquipos();
+
+/* ================= PWA: service worker ================= */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("SW no registrado:",err));
+  });
+}
+</script>
+</body>
+</html>
