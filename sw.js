@@ -1,5 +1,5 @@
 /* Iruña Partner Challenge — service worker */
-const CACHE = "ipc-v1";
+const CACHE = "ipc-v2";
 const ASSETS = [
   "./",
   "./index.html",

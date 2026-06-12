@@ -161,6 +161,24 @@
     margin-left:8px;padding-left:18px;
     display:flex;flex-direction:column;gap:10px;padding-top:6px;
   }
+  .tl-cat{
+    position:relative;
+    font-family:"Pacifico",cursive;
+    color:var(--pink);
+    font-size:1.05rem;
+    margin:10px 0 2px;
+    display:flex;align-items:center;gap:12px;
+  }
+  .tl-cat::before{
+    content:"";position:absolute;left:-24px;top:50%;transform:translateY(-50%);
+    width:9px;height:9px;border-radius:50%;
+    background:var(--yellow);border:2px solid var(--bg);
+  }
+  .tl-cat::after{
+    content:"";flex:1;height:1px;
+    background:linear-gradient(90deg, var(--card-line), transparent);
+  }
+  .timeline .tl-cat:first-child{margin-top:0}
   .slot{
     position:relative;
     background:var(--card);
@@ -473,6 +491,7 @@ function renderHorarios(){
     const wodMeta = WODS[i];
     let slots = "";
     Object.entries(blk.cats).forEach(([cat,t])=>{
+      slots += `<div class="tl-cat">${CAT_LABEL[cat]}</div>`;
       [0,1].forEach(h=>{
         const mine = sel && sel.cat===cat && sel.heat===h;
         slots += `
